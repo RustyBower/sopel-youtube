@@ -46,9 +46,7 @@ def configure(config):
 
 def setup(bot):
     bot.config.define_section('youtube', YoutubeSection)
-    if 'url_callbacks' not in bot.memory:
-        bot.memory['url_callbacks'] = tools.SopelMemory()
-    bot.memory['url_callbacks'][regex] = get_info
+    bot.register_url_callback(regex, get_info)
     global API
     API = apiclient.discovery.build("youtube", "v3",
                                     developerKey=bot.config.youtube.api_key,
@@ -56,7 +54,7 @@ def setup(bot):
 
 
 def shutdown(bot):
-    del bot.memory['url_callbacks'][regex]
+    bot.unregister_url_callback(regex)
 
 
 @commands('yt', 'youtube')
@@ -162,5 +160,5 @@ def _parse_duration(duration):
 
 def _parse_published_at(bot, trigger, published):
     pubdate = datetime.datetime.strptime(published, '%Y-%m-%dT%H:%M:%S.%fZ')
-    return tools.time.format_time(bot.db, bot.config, nick=trigger.nick, 
+    return tools.time.format_time(bot.db, bot.config, nick=trigger.nick,
         channel=trigger.sender, time=pubdate)
